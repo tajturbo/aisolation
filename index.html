@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIsolation — приватный AI для корпоративных знаний</title>
+<meta name="description" content="Приватный AI-помощник для поиска по внутренним знаниям компании: Confluence, вики, базы знаний. Корпоративная авторизация, аудит, изоляция данных. On-premise или облачный дата-центр внутри страны.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230f62fe'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='20' font-weight='bold' fill='white' text-anchor='middle'%3EA%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400&amp;family=IBM+Plex+Sans:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+:root{
+  --blue:#0f62fe;
+  --blue-hover:#0353e9;
+  --black:#161616;
+  --gray-100:#f4f4f4;
+  --gray-90:#262626;
+  --gray-80:#393939;
+  --gray-70:#525252;
+  --gray-60:#6f6f6f;
+  --gray-20:#e0e0e0;
+  --white:#ffffff;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:'IBM Plex Sans',-apple-system,'Segoe UI',Arial,sans-serif;
+  color:var(--black);
+  background:var(--white);
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:inherit;text-decoration:none}
+.container{max-width:1584px;margin:0 auto;padding:0 5%}
+h1,h2,h3{font-weight:300;letter-spacing:-0.01em}
+.mono{font-family:'IBM Plex Mono',monospace}
+
+/* Header */
+.header{
+  position:sticky;top:0;z-index:100;
+  display:flex;align-items:stretch;
+  background:var(--black);color:var(--white);
+  height:48px;
+}
+.header .container{display:flex;align-items:stretch;width:100%}
+.wordmark{
+  display:flex;align-items:center;padding:0 24px 0 0;
+  font-size:0.95rem;font-weight:600;letter-spacing:0.02em;white-space:nowrap;
+}
+.wordmark span{font-weight:300}
+.nav{display:flex;align-items:stretch;margin-left:auto}
+.nav a{
+  display:flex;align-items:center;padding:0 16px;
+  font-size:0.875rem;color:#c6c6c6;border-left:1px solid transparent;
+}
+.nav a:hover{background:var(--gray-80);color:var(--white)}
+.header-cta{
+  display:flex;align-items:center;padding:0 24px;margin-left:8px;
+  background:var(--blue);color:var(--white);font-size:0.875rem;font-weight:500;
+}
+.header-cta:hover{background:var(--blue-hover)}
+
+/* Hero */
+.hero{padding:96px 0 0;border-bottom:1px solid var(--gray-20)}
+.kicker{
+  font-family:'IBM Plex Mono',monospace;font-size:0.8rem;
+  letter-spacing:0.12em;text-transform:uppercase;color:var(--blue);
+  margin-bottom:32px;
+}
+.hero h1{
+  font-size:clamp(2.75rem,5.5vw,5rem);
+  line-height:1.08;max-width:14em;margin-bottom:40px;
+}
+.lead{
+  font-size:1.25rem;font-weight:300;line-height:1.55;
+  color:var(--gray-80);max-width:44em;margin-bottom:48px;
+}
+.cta-row{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:80px}
+.btn{
+  display:inline-flex;align-items:center;gap:12px;
+  padding:16px 32px;font-size:1rem;font-weight:500;
+  border:1px solid var(--black);transition:background .15s,color .15s;
+}
+.btn-primary{background:var(--blue);border-color:var(--blue);color:var(--white)}
+.btn-primary:hover{background:var(--blue-hover);border-color:var(--blue-hover)}
+.btn-ghost{background:transparent;color:var(--black)}
+.btn-ghost:hover{background:var(--black);color:var(--white)}
+.hero-meta{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  border-top:1px solid var(--gray-20);
+}
+.hero-meta div{
+  padding:24px 32px 40px 0;font-size:0.95rem;color:var(--gray-70);
+  border-right:1px solid var(--gray-20);
+}
+.hero-meta div+div{padding-left:32px}
+.hero-meta div:last-child{border-right:none}
+
+/* Sections */
+section.block{padding:96px 0;border-bottom:1px solid var(--gray-20)}
+.label{
+  font-family:'IBM Plex Mono',monospace;font-size:0.8rem;
+  letter-spacing:0.12em;text-transform:uppercase;color:var(--gray-60);
+  margin-bottom:24px;
+}
+.label b{color:var(--blue);font-weight:400}
+h2{font-size:clamp(2rem,3.5vw,3rem);line-height:1.15;max-width:20em;margin-bottom:32px}
+.section-lead{font-size:1.15rem;font-weight:300;color:var(--gray-80);max-width:46em;margin-bottom:64px}
+
+.grid{display:grid;gap:0}
+.cols-3{grid-template-columns:repeat(3,1fr)}
+.cols-2{grid-template-columns:repeat(2,1fr)}
+.card{
+  padding:32px 32px 64px 0;
+  border-top:1px solid var(--gray-20);
+  border-right:1px solid var(--gray-20);
+}
+.card+.card{padding-left:32px}
+.card:nth-child(3n){border-right:none}
+.card h3{font-size:1.35rem;font-weight:400;margin-bottom:16px}
+.card p{font-size:0.95rem;color:var(--gray-70)}
+.card .num{
+  font-family:'IBM Plex Mono',monospace;font-size:0.8rem;
+  color:var(--blue);display:block;margin-bottom:24px;
+}
+.cols-2 .card{border-right:none}
+.cols-2 .card+.card{border-left:1px solid var(--gray-20)}
+
+/* Dark security band */
+.dark{background:var(--gray-90);color:var(--white);border-bottom:none}
+.dark .label{color:#a8a8a8}
+.dark .section-lead{color:#e0e0e0}
+.dark .card{border-top:1px solid rgba(255,255,255,.25);border-right:none}
+.dark .card p{color:#c6c6c6}
+.dark .card .num{color:#78a9ff}
+
+/* Deployment statement */
+.statement{
+  margin-top:64px;padding:40px;
+  border:1px solid var(--gray-20);border-left:4px solid var(--blue);
+  font-size:1.25rem;font-weight:300;color:var(--gray-80);max-width:46em;
+}
+
+/* Steps */
+.step{display:grid;grid-template-columns:120px 1fr;padding:40px 0;border-top:1px solid var(--gray-20)}
+.step .n{font-family:'IBM Plex Mono',monospace;font-size:2rem;color:var(--blue);font-weight:300}
+.step h3{font-size:1.5rem;font-weight:400;margin-bottom:12px}
+.step p{color:var(--gray-70);max-width:44em}
+
+/* CTA band */
+.cta-band{background:var(--blue);color:var(--white);padding:96px 0}
+.cta-band h2{max-width:16em}
+.cta-band p{font-size:1.15rem;font-weight:300;max-width:42em;margin-bottom:48px;color:#dbe7ff}
+.btn-white{background:var(--white);border-color:var(--white);color:var(--blue)}
+.btn-white:hover{background:var(--gray-100)}
+
+/* Footer */
+footer{background:var(--black);color:var(--white);padding:64px 0 40px}
+footer .top{display:flex;justify-content:space-between;flex-wrap:wrap;gap:32px;margin-bottom:48px}
+footer .f-nav{display:flex;gap:32px;flex-wrap:wrap}
+footer .f-nav a{font-size:0.875rem;color:#c6c6c6}
+footer .f-nav a:hover{color:var(--white)}
+footer .tag{color:#a8a8a8;font-size:0.9rem;max-width:32em;margin-top:12px}
+footer .bottom{border-top:1px solid var(--gray-80);padding-top:24px;font-size:0.8rem;color:#8d8d8d}
+
+@media (max-width:1056px){
+  .nav{display:none}
+  .hero-meta{grid-template-columns:1fr}
+  .hero-meta div{border-right:none;border-bottom:1px solid var(--gray-20);padding-left:0!important}
+  .hero-meta div:last-child{border-bottom:none}
+  .cols-3{grid-template-columns:1fr 1fr}
+  .card:nth-child(3n){border-right:1px solid var(--gray-20)}
+  .card:nth-child(2n){border-right:none}
+}
+@media (max-width:672px){
+  .cols-3,.cols-2{grid-template-columns:1fr}
+  .card{border-right:none!important;padding-left:0!important}
+  .cols-2 .card+.card{border-left:none}
+  .step{grid-template-columns:1fr;gap:12px}
+  section.block{padding:64px 0}
+  .hero{padding-top:64px}
+}
+</style>
+</head>
+<body id="top">
+
+<header class="header">
+  <div class="container">
+    <a class="wordmark" href="#top">AI<span>solation</span></a>
+    <nav class="nav">
+      <a href="#problem">Задача</a>
+      <a href="#solution">Решение</a>
+      <a href="#security">Безопасность</a>
+      <a href="#deployment">Размещение</a>
+      <a href="#delivery">Внедрение</a>
+    </nav>
+    <a class="header-cta" href="#contact">Обсудить пилот</a>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="container">
+      <p class="kicker">Приватный AI для корпоративных знаний</p>
+      <h1>Ваши знания. Ваши правила доступа. Ваш AI-контур.</h1>
+      <p class="lead">Приватный AI-помощник для поиска по внутренним знаниям и решения рабочих задач. Объединяет Confluence, вики и базы знаний, отвечает со ссылками на источники и учитывает права доступа каждого сотрудника. Вся обработка — внутри инфраструктуры под вашим контролем.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="#contact">Запросить пилот →</a>
+        <a class="btn btn-ghost" href="#solution">Как это работает</a>
+      </div>
+      <div class="hero-meta">
+        <div>On-premise или облачный дата-центр внутри страны</div>
+        <div>Запросы и документы не покидают ваш контур</div>
+        <div>Корпоративная авторизация и аудит обращений</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="problem">
+    <div class="container">
+      <p class="label"><b>01</b> / Задача</p>
+      <h2>Знания есть. Быстрого доступа к ним — нет.</h2>
+      <p class="section-lead">Корпоративные знания распределены между вики, Confluence и внутренними базами. Поиск ответа занимает часы, эксперты перегружены однотипными вопросами, а использовать внешние AI-сервисы с внутренними документами нельзя.</p>
+      <div class="grid cols-3">
+        <article class="card">
+          <span class="num">01</span>
+          <h3>Знания разрознены</h3>
+          <p>Информация распределена по системам: вики, Confluence, файловые хранилища, история инцидентов и заявок.</p>
+        </article>
+        <article class="card">
+          <span class="num">02</span>
+          <h3>Внешние AI под ограничениями</h3>
+          <p>Внутренние документы и запросы сотрудников не должны покидать контур компании и передаваться сторонним сервисам.</p>
+        </article>
+        <article class="card">
+          <span class="num">03</span>
+          <h3>Доступ неодинаков</h3>
+          <p>У подразделений и ролей разные права. AI-ответы обязаны учитывать это так же строго, как исходные системы.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="solution">
+    <div class="container">
+      <p class="label"><b>02</b> / Решение</p>
+      <h2>Один помощник. Все ваши знания.</h2>
+      <p class="section-lead">Мы интегрируем приватную LLM с вашими источниками знаний и корпоративной авторизацией. Сотрудник задаёт вопрос — система находит ответ только среди документов, доступных ему, и показывает источники.</p>
+      <div class="grid cols-2">
+        <article class="card">
+          <span class="num">RAG</span>
+          <h3>Поиск по внутренним источникам</h3>
+          <p>Подключение Confluence, вики и баз знаний. Ответы формируются со ссылками на первоисточники — каждый факт можно проверить.</p>
+        </article>
+        <article class="card">
+          <span class="num">SSO</span>
+          <h3>Корпоративная авторизация</h3>
+          <p>Интеграция с действующей системой идентификации — SSO, LDAP, Active Directory. Мы не создаём отдельную модель доступа.</p>
+        </article>
+        <article class="card">
+          <span class="num">ACL</span>
+          <h3>Ответы в рамках полномочий</h3>
+          <p>Права доступа применяются при поиске и извлечении документов — до передачи данных в контекст модели, а не только при отображении ответа.</p>
+        </article>
+        <article class="card">
+          <span class="num">LOG</span>
+          <h3>Аудит обращений</h3>
+          <p>Кто обращался к системе, какие источники использованы, какой ответ сформирован. Правила журналирования и сроки хранения определяете вы.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="block dark" id="security">
+    <div class="container">
+      <p class="label"><b>03</b> / Безопасность</p>
+      <h2>Защита от утечек заложена в архитектуру.</h2>
+      <p class="section-lead">Изолированная обработка, разграничение доступа и контроль каналов передачи — на уровне всего решения: от загрузки документов до формирования ответа.</p>
+      <div class="grid cols-3">
+        <article class="card">
+          <span class="num">01</span>
+          <h3>Изолированный контур</h3>
+          <p>LLM, RAG, embeddings, поисковые индексы и обработка документов размещаются внутри вашего контура. Внешние зависимости и телеметрия исключаются.</p>
+        </article>
+        <article class="card">
+          <span class="num">02</span>
+          <h3>Доступ к знаниям по правам</h3>
+          <p>Ограничения применяются до передачи материалов модели. Сотрудник получает информацию только в пределах своих полномочий.</p>
+        </article>
+        <article class="card">
+          <span class="num">03</span>
+          <h3>Изоляция подразделений</h3>
+          <p>Пространства знаний, индексы и сервисные учётные записи разделены в соответствии с политиками компании.</p>
+        </article>
+        <article class="card">
+          <span class="num">04</span>
+          <h3>Контроль каналов передачи</h3>
+          <p>Сетевые политики ограничивают исходящие соединения. Интеграции работают только с разрешёнными системами.</p>
+        </article>
+        <article class="card">
+          <span class="num">05</span>
+          <h3>Защита чувствительных данных</h3>
+          <p>Обнаружение и маскирование конфиденциальной информации, ограничения на вывод, интеграция с корпоративными средствами DLP.</p>
+        </article>
+        <article class="card">
+          <span class="num">06</span>
+          <h3>Аудит без избыточного накопления</h3>
+          <p>Доступ к журналам, сроки хранения, маскирование содержимого и удаление данных контролирует заказчик.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="deployment">
+    <div class="container">
+      <p class="label"><b>04</b> / Размещение</p>
+      <h2>Инфраструктура — под вашим контролем.</h2>
+      <p class="section-lead">Два варианта размещения — с сохранением контроля над данными, моделями и обработкой на стороне заказчика.</p>
+      <div class="grid cols-2">
+        <article class="card">
+          <span class="num">A</span>
+          <h3>On-premise</h3>
+          <p>Развёртывание на ваших серверах: физический контроль над оборудованием, возможность работы в закрытом контуре без доступа в интернет.</p>
+        </article>
+        <article class="card">
+          <span class="num">B</span>
+          <h3>Облачный ДЦ внутри страны</h3>
+          <p>Размещение в облачном дата-центре в нужной юрисдикции — с сохранением контроля над инфраструктурой и обработкой данных.</p>
+        </article>
+      </div>
+      <div class="statement">
+        Документы, запросы, ответы, поисковые индексы и журналы остаются внутри согласованного контура. Ничего не передаётся внешним AI-провайдерам.
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="delivery">
+    <div class="container">
+      <p class="label"><b>05</b> / Внедрение</p>
+      <h2>От пилота — к промышленной эксплуатации.</h2>
+      <div class="step">
+        <div class="n">01</div>
+        <div>
+          <h3>Пилот на реальной задаче</h3>
+          <p>Выбираем один процесс, подключаем ограниченный набор источников и измеряем результат на ваших данных — до решения о масштабировании и крупных вложениях.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="n">02</div>
+        <div>
+          <h3>Интеграция и безопасность</h3>
+          <p>Подключаем все нужные источники знаний, корпоративную авторизацию, сетевые политики, разграничение доступа и аудит обращений.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="n">03</div>
+        <div>
+          <h3>Эксплуатация и сопровождение</h3>
+          <p>Документация, мониторинг, обновления и проверка качества ответов при изменениях. Система остаётся управляемой после запуска.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-band" id="contact">
+    <div class="container">
+      <h2>Обсудим пилот на вашей задаче?</h2>
+      <p>Покажем, как приватный AI-поиск работает на ваших источниках — с вашими правами доступа и политиками безопасности.</p>
+      <a class="btn btn-white" href="mailto:info@adminscloud.com?subject=AIsolation%20—%20пилот">Написать нам →</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="top">
+      <div>
+        <div class="wordmark">AI<span>solation</span></div>
+        <p class="tag">Приватный AI для корпоративных знаний. On-premise и локальное облако. Все запросы остаются внутри вашей инфраструктуры.</p>
+      </div>
+      <nav class="f-nav">
+        <a href="#problem">Задача</a>
+        <a href="#solution">Решение</a>
+        <a href="#security">Безопасность</a>
+        <a href="#deployment">Размещение</a>
+        <a href="#contact">Контакт</a>
+      </nav>
+    </div>
+    <div class="bottom">© 2026 AIsolation. Приватный AI для корпоративных знаний.</div>
+  </div>
+</footer>
+
+</body>
+</html>
