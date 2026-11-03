@@ -1,395 +1,404 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AIsolation — приватный AI для корпоративных знаний</title>
-<meta name="description" content="Приватный AI-помощник для поиска по внутренним знаниям компании: Confluence, вики, базы знаний. Корпоративная авторизация, аудит, изоляция данных. On-premise или облачный дата-центр внутри страны.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230f62fe'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='20' font-weight='bold' fill='white' text-anchor='middle'%3EA%3C/text%3E%3C/svg%3E">
+<title>AIsolation — Private AI for Enterprise Knowledge</title>
+<meta name="description" content="Private AI assistant for enterprise knowledge: Confluence, wikis, knowledge bases. Corporate SSO, access-aware answers, full audit. Deployed on-prem, in private or government cloud — every request stays inside your perimeter.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f62fe'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='18' font-weight='bold' fill='white' text-anchor='middle'%3EA%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400&amp;family=IBM+Plex+Sans:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
 <style>
 :root{
-  --blue:#0f62fe;
-  --blue-hover:#0353e9;
-  --black:#161616;
-  --gray-100:#f4f4f4;
-  --gray-90:#262626;
-  --gray-80:#393939;
-  --gray-70:#525252;
-  --gray-60:#6f6f6f;
-  --gray-20:#e0e0e0;
-  --white:#ffffff;
+  --bg:#07090d;
+  --bg2:#0b0f16;
+  --panel:rgba(255,255,255,.04);
+  --panel-border:rgba(255,255,255,.09);
+  --txt:#e8edf4;
+  --muted:#9aa7b8;
+  --dim:#5f6b7d;
+  --blue:#4f8dff;
+  --cyan:#39d7e8;
+  --violet:#8b6cf6;
+  --grad:linear-gradient(92deg,#4f8dff 0%,#39d7e8 50%,#8b6cf6 100%);
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{
-  font-family:'IBM Plex Sans',-apple-system,'Segoe UI',Arial,sans-serif;
-  color:var(--black);
-  background:var(--white);
-  line-height:1.5;
+  font-family:'Space Grotesk',-apple-system,'Segoe UI',sans-serif;
+  background:var(--bg);color:var(--txt);
+  line-height:1.6;overflow-x:hidden;
   -webkit-font-smoothing:antialiased;
 }
 a{color:inherit;text-decoration:none}
-.container{max-width:1584px;margin:0 auto;padding:0 5%}
-h1,h2,h3{font-weight:300;letter-spacing:-0.01em}
-.mono{font-family:'IBM Plex Mono',monospace}
+.mono{font-family:'JetBrains Mono',monospace}
+.wrap{max-width:1280px;margin:0 auto;padding:0 6%}
 
-/* Header */
-.header{
+/* ambient background */
+.bg-fx{position:fixed;inset:0;z-index:-1;overflow:hidden}
+.bg-fx::before{
+  content:'';position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:56px 56px;
+  mask-image:radial-gradient(ellipse 90% 60% at 50% 0%,#000 20%,transparent 100%);
+}
+.orb{position:absolute;border-radius:50%;filter:blur(110px);opacity:.35;animation:drift 22s ease-in-out infinite alternate}
+.orb1{width:520px;height:520px;background:#1450c9;top:-180px;left:-120px}
+.orb2{width:420px;height:420px;background:#0e7d8c;top:10%;right:-160px;animation-delay:-8s}
+.orb3{width:380px;height:380px;background:#5a3fd4;top:52%;left:38%;animation-delay:-14s}
+@keyframes drift{
+  from{transform:translate(0,0) scale(1)}
+  to{transform:translate(70px,50px) scale(1.12)}
+}
+.noise{position:absolute;inset:0;opacity:.05;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E")}
+
+/* nav */
+nav{
   position:sticky;top:0;z-index:100;
-  display:flex;align-items:stretch;
-  background:var(--black);color:var(--white);
-  height:48px;
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  background:rgba(7,9,13,.72);
+  border-bottom:1px solid var(--panel-border);
 }
-.header .container{display:flex;align-items:stretch;width:100%}
-.wordmark{
-  display:flex;align-items:center;padding:0 24px 0 0;
-  font-size:0.95rem;font-weight:600;letter-spacing:0.02em;white-space:nowrap;
+nav .wrap{display:flex;align-items:center;height:64px}
+.brand{font-weight:600;font-size:1.05rem;letter-spacing:.02em}
+.brand em{font-style:normal;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.links{margin-left:auto;display:flex;gap:28px;font-size:.88rem;color:var(--muted)}
+.links a:hover{color:var(--txt)}
+.nav-cta{
+  margin-left:28px;padding:9px 20px;border-radius:8px;font-size:.88rem;font-weight:500;
+  background:var(--grad);color:#fff;transition:.2s;
 }
-.wordmark span{font-weight:300}
-.nav{display:flex;align-items:stretch;margin-left:auto}
-.nav a{
-  display:flex;align-items:center;padding:0 16px;
-  font-size:0.875rem;color:#c6c6c6;border-left:1px solid transparent;
-}
-.nav a:hover{background:var(--gray-80);color:var(--white)}
-.header-cta{
-  display:flex;align-items:center;padding:0 24px;margin-left:8px;
-  background:var(--blue);color:var(--white);font-size:0.875rem;font-weight:500;
-}
-.header-cta:hover{background:var(--blue-hover)}
+.nav-cta:hover{filter:brightness(1.15);transform:translateY(-1px)}
 
-/* Hero */
-.hero{padding:96px 0 0;border-bottom:1px solid var(--gray-20)}
-.kicker{
-  font-family:'IBM Plex Mono',monospace;font-size:0.8rem;
-  letter-spacing:0.12em;text-transform:uppercase;color:var(--blue);
-  margin-bottom:32px;
+/* hero */
+.hero{padding:110px 0 90px;position:relative}
+.tag{
+  display:inline-flex;align-items:center;gap:10px;
+  font-family:'JetBrains Mono',monospace;font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--cyan);border:1px solid rgba(57,215,232,.35);border-radius:100px;
+  padding:7px 16px;margin-bottom:36px;background:rgba(57,215,232,.06);
 }
+.tag::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--cyan);animation:pulse 2.2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(57,215,232,.5)}50%{opacity:.6;box-shadow:0 0 0 6px rgba(57,215,232,0)}}
 .hero h1{
-  font-size:clamp(2.75rem,5.5vw,5rem);
-  line-height:1.08;max-width:14em;margin-bottom:40px;
+  font-size:clamp(2.6rem,6vw,4.6rem);font-weight:500;line-height:1.06;
+  letter-spacing:-.02em;max-width:16em;margin-bottom:28px;
 }
-.lead{
-  font-size:1.25rem;font-weight:300;line-height:1.55;
-  color:var(--gray-80);max-width:44em;margin-bottom:48px;
-}
-.cta-row{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:80px}
+.hero h1 .grad{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero-sub{font-size:1.18rem;font-weight:300;color:var(--muted);max-width:42em;margin-bottom:44px}
+.hero-cta{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:70px}
 .btn{
-  display:inline-flex;align-items:center;gap:12px;
-  padding:16px 32px;font-size:1rem;font-weight:500;
-  border:1px solid var(--black);transition:background .15s,color .15s;
+  display:inline-flex;align-items:center;gap:10px;padding:15px 30px;
+  border-radius:10px;font-size:1rem;font-weight:500;transition:.2s;
 }
-.btn-primary{background:var(--blue);border-color:var(--blue);color:var(--white)}
-.btn-primary:hover{background:var(--blue-hover);border-color:var(--blue-hover)}
-.btn-ghost{background:transparent;color:var(--black)}
-.btn-ghost:hover{background:var(--black);color:var(--white)}
-.hero-meta{
-  display:grid;grid-template-columns:repeat(3,1fr);
-  border-top:1px solid var(--gray-20);
-}
-.hero-meta div{
-  padding:24px 32px 40px 0;font-size:0.95rem;color:var(--gray-70);
-  border-right:1px solid var(--gray-20);
-}
-.hero-meta div+div{padding-left:32px}
-.hero-meta div:last-child{border-right:none}
+.btn-main{background:var(--grad);color:#fff}
+.btn-main:hover{filter:brightness(1.15);transform:translateY(-2px);box-shadow:0 12px 34px rgba(79,141,255,.3)}
+.btn-line{border:1px solid var(--panel-border);color:var(--txt);background:var(--panel)}
+.btn-line:hover{border-color:rgba(255,255,255,.25);background:rgba(255,255,255,.07)}
 
-/* Sections */
-section.block{padding:96px 0;border-bottom:1px solid var(--gray-20)}
-.label{
-  font-family:'IBM Plex Mono',monospace;font-size:0.8rem;
-  letter-spacing:0.12em;text-transform:uppercase;color:var(--gray-60);
-  margin-bottom:24px;
+/* hero terminal */
+.terminal{
+  max-width:860px;border-radius:14px;overflow:hidden;
+  border:1px solid var(--panel-border);
+  background:rgba(10,14,20,.85);
+  box-shadow:0 30px 80px rgba(0,0,0,.5),0 0 0 1px rgba(79,141,255,.08),0 0 120px rgba(79,141,255,.08);
+  backdrop-filter:blur(10px);
 }
-.label b{color:var(--blue);font-weight:400}
-h2{font-size:clamp(2rem,3.5vw,3rem);line-height:1.15;max-width:20em;margin-bottom:32px}
-.section-lead{font-size:1.15rem;font-weight:300;color:var(--gray-80);max-width:46em;margin-bottom:64px}
+.term-bar{display:flex;align-items:center;gap:8px;padding:13px 18px;border-bottom:1px solid var(--panel-border)}
+.dot{width:11px;height:11px;border-radius:50%}
+.term-bar .mono{margin-left:12px;font-size:.72rem;color:var(--dim)}
+.term-body{padding:26px 28px;font-family:'JetBrains Mono',monospace;font-size:.86rem;line-height:2}
+.term-q{color:var(--cyan)}
+.term-a{color:#c9d4e3}
+.term-src{display:inline-block;margin:2px 8px 2px 0;padding:1px 10px;border-radius:6px;font-size:.72rem;
+  border:1px solid rgba(79,141,255,.4);color:var(--blue);background:rgba(79,141,255,.08)}
+.term-ok{color:#4ade80}
+.term-deny{color:#f87171}
+.cursor{display:inline-block;width:9px;height:1.1em;background:var(--cyan);vertical-align:text-bottom;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
 
-.grid{display:grid;gap:0}
-.cols-3{grid-template-columns:repeat(3,1fr)}
-.cols-2{grid-template-columns:repeat(2,1fr)}
+/* ticker */
+.ticker{
+  border-top:1px solid var(--panel-border);border-bottom:1px solid var(--panel-border);
+  overflow:hidden;padding:16px 0;background:rgba(255,255,255,.02);
+}
+.ticker-track{display:flex;gap:0;width:max-content;animation:tick 30s linear infinite}
+.ticker span{
+  font-family:'JetBrains Mono',monospace;font-size:.78rem;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--dim);padding:0 34px;white-space:nowrap;
+}
+.ticker span i{color:var(--blue);font-style:normal;margin-right:34px}
+@keyframes tick{to{transform:translateX(-50%)}}
+
+/* sections */
+section{padding:110px 0;position:relative}
+.kick{
+  font-family:'JetBrains Mono',monospace;font-size:.74rem;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--violet);margin-bottom:22px;display:block;
+}
+h2{font-size:clamp(1.9rem,4vw,3rem);font-weight:500;line-height:1.12;letter-spacing:-.015em;max-width:22em;margin-bottom:22px}
+.sub{font-size:1.08rem;font-weight:300;color:var(--muted);max-width:44em;margin-bottom:58px}
+.cards{display:grid;gap:1px;background:var(--panel-border);border:1px solid var(--panel-border);border-radius:16px;overflow:hidden}
+.c3{grid-template-columns:repeat(3,1fr)}
+.c2{grid-template-columns:repeat(2,1fr)}
 .card{
-  padding:32px 32px 64px 0;
-  border-top:1px solid var(--gray-20);
-  border-right:1px solid var(--gray-20);
+  background:var(--bg2);padding:34px 30px 44px;position:relative;
+  transition:background .25s;
 }
-.card+.card{padding-left:32px}
-.card:nth-child(3n){border-right:none}
-.card h3{font-size:1.35rem;font-weight:400;margin-bottom:16px}
-.card p{font-size:0.95rem;color:var(--gray-70)}
-.card .num{
-  font-family:'IBM Plex Mono',monospace;font-size:0.8rem;
-  color:var(--blue);display:block;margin-bottom:24px;
+.card:hover{background:#10151f}
+.card::after{
+  content:'';position:absolute;top:0;left:30px;right:30px;height:1px;
+  background:var(--grad);opacity:0;transition:opacity .25s;
 }
-.cols-2 .card{border-right:none}
-.cols-2 .card+.card{border-left:1px solid var(--gray-20)}
+.card:hover::after{opacity:1}
+.card .idx{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--blue);display:block;margin-bottom:22px}
+.card h3{font-size:1.22rem;font-weight:500;margin-bottom:12px}
+.card p{font-size:.93rem;color:var(--muted)}
 
-/* Dark security band */
-.dark{background:var(--gray-90);color:var(--white);border-bottom:none}
-.dark .label{color:#a8a8a8}
-.dark .section-lead{color:#e0e0e0}
-.dark .card{border-top:1px solid rgba(255,255,255,.25);border-right:none}
-.dark .card p{color:#c6c6c6}
-.dark .card .num{color:#78a9ff}
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--panel-border);border:1px solid var(--panel-border);border-radius:16px;overflow:hidden}
+.stat{background:var(--bg2);padding:38px 32px}
+.stat .val{font-size:2rem;font-weight:500;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;margin-bottom:8px}
+.stat .lbl{font-size:.9rem;color:var(--muted)}
 
-/* Deployment statement */
-.statement{
-  margin-top:64px;padding:40px;
-  border:1px solid var(--gray-20);border-left:4px solid var(--blue);
-  font-size:1.25rem;font-weight:300;color:var(--gray-80);max-width:46em;
+/* infra */
+.infra-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:56px;align-items:start}
+.deploy-list{display:flex;flex-direction:column;gap:1px;background:var(--panel-border);border:1px solid var(--panel-border);border-radius:16px;overflow:hidden}
+.deploy{background:var(--bg2);padding:30px 28px}
+.deploy h3{font-size:1.18rem;font-weight:500;margin-bottom:10px;display:flex;align-items:center;gap:12px}
+.deploy h3 .chip{font-family:'JetBrains Mono',monospace;font-size:.68rem;letter-spacing:.1em;padding:4px 10px;border-radius:6px;border:1px solid rgba(139,108,246,.4);color:var(--violet);background:rgba(139,108,246,.08)}
+.deploy p{font-size:.93rem;color:var(--muted)}
+.note{
+  padding:26px 28px;border-radius:14px;border:1px solid rgba(57,215,232,.3);
+  background:linear-gradient(120deg,rgba(57,215,232,.07),rgba(139,108,246,.07));
+  font-size:.98rem;color:#cfe3ea;
 }
+.note b{color:var(--txt);font-weight:500}
 
-/* Steps */
-.step{display:grid;grid-template-columns:120px 1fr;padding:40px 0;border-top:1px solid var(--gray-20)}
-.step .n{font-family:'IBM Plex Mono',monospace;font-size:2rem;color:var(--blue);font-weight:300}
-.step h3{font-size:1.5rem;font-weight:400;margin-bottom:12px}
-.step p{color:var(--gray-70);max-width:44em}
-
-/* CTA band */
-.cta-band{background:var(--blue);color:var(--white);padding:96px 0}
-.cta-band h2{max-width:16em}
-.cta-band p{font-size:1.15rem;font-weight:300;max-width:42em;margin-bottom:48px;color:#dbe7ff}
-.btn-white{background:var(--white);border-color:var(--white);color:var(--blue)}
-.btn-white:hover{background:var(--gray-100)}
-
-/* Footer */
-footer{background:var(--black);color:var(--white);padding:64px 0 40px}
-footer .top{display:flex;justify-content:space-between;flex-wrap:wrap;gap:32px;margin-bottom:48px}
-footer .f-nav{display:flex;gap:32px;flex-wrap:wrap}
-footer .f-nav a{font-size:0.875rem;color:#c6c6c6}
-footer .f-nav a:hover{color:var(--white)}
-footer .tag{color:#a8a8a8;font-size:0.9rem;max-width:32em;margin-top:12px}
-footer .bottom{border-top:1px solid var(--gray-80);padding-top:24px;font-size:0.8rem;color:#8d8d8d}
-
-@media (max-width:1056px){
-  .nav{display:none}
-  .hero-meta{grid-template-columns:1fr}
-  .hero-meta div{border-right:none;border-bottom:1px solid var(--gray-20);padding-left:0!important}
-  .hero-meta div:last-child{border-bottom:none}
-  .cols-3{grid-template-columns:1fr 1fr}
-  .card:nth-child(3n){border-right:1px solid var(--gray-20)}
-  .card:nth-child(2n){border-right:none}
+/* process */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;counter-reset:st}
+.step{
+  padding:32px 28px;border-radius:16px;border:1px solid var(--panel-border);
+  background:var(--panel);backdrop-filter:blur(8px);position:relative;
 }
-@media (max-width:672px){
-  .cols-3,.cols-2{grid-template-columns:1fr}
-  .card{border-right:none!important;padding-left:0!important}
-  .cols-2 .card+.card{border-left:none}
-  .step{grid-template-columns:1fr;gap:12px}
-  section.block{padding:64px 0}
-  .hero{padding-top:64px}
+.step .n{
+  font-family:'JetBrains Mono',monospace;font-size:2.4rem;font-weight:500;
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;
+  display:block;margin-bottom:18px;
+}
+.step h3{font-size:1.18rem;font-weight:500;margin-bottom:10px}
+.step p{font-size:.93rem;color:var(--muted)}
+
+/* CTA */
+.cta{
+  border-radius:24px;padding:80px 8%;
+  background:
+    radial-gradient(ellipse 70% 120% at 15% 0%,rgba(79,141,255,.22),transparent),
+    radial-gradient(ellipse 70% 120% at 85% 100%,rgba(139,108,246,.22),transparent),
+    #0c1119;
+  border:1px solid var(--panel-border);text-align:left;
+}
+.cta h2{margin-bottom:18px}
+.cta p{color:var(--muted);max-width:38em;margin-bottom:40px;font-size:1.08rem;font-weight:300}
+
+/* footer */
+footer{border-top:1px solid var(--panel-border);padding:56px 0 40px}
+footer .row{display:flex;justify-content:space-between;flex-wrap:wrap;gap:28px;margin-bottom:36px}
+footer .small{color:var(--dim);font-size:.82rem}
+footer .f-links{display:flex;gap:24px;font-size:.86rem;color:var(--muted)}
+footer .f-links a:hover{color:var(--txt)}
+
+/* reveal */
+.rv{opacity:0;transform:translateY(26px);transition:opacity .7s ease,transform .7s ease}
+.rv.in{opacity:1;transform:none}
+
+@media (max-width:960px){
+  .links{display:none}
+  .c3{grid-template-columns:1fr 1fr}
+  .infra-grid{grid-template-columns:1fr}
+  .stats{grid-template-columns:1fr}
+  .steps{grid-template-columns:1fr}
+}
+@media (max-width:640px){
+  .c3,.c2{grid-template-columns:1fr}
+  section{padding:72px 0}
+  .hero{padding:72px 0}
 }
 </style>
 </head>
-<body id="top">
+<body>
 
-<header class="header">
-  <div class="container">
-    <a class="wordmark" href="#top">AI<span>solation</span></a>
-    <nav class="nav">
-      <a href="#problem">Задача</a>
-      <a href="#solution">Решение</a>
-      <a href="#security">Безопасность</a>
-      <a href="#deployment">Размещение</a>
-      <a href="#delivery">Внедрение</a>
-    </nav>
-    <a class="header-cta" href="#contact">Обсудить пилот</a>
+<div class="bg-fx"><div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div><div class="noise"></div></div>
+
+<nav>
+  <div class="wrap">
+    <a class="brand" href="#">AI<em>solation</em></a>
+    <div class="links">
+      <a href="#problem">Problem</a>
+      <a href="#solution">Solution</a>
+      <a href="#security">Security</a>
+      <a href="#infra">Infrastructure</a>
+      <a href="#process">Process</a>
+    </div>
+    <a class="nav-cta" href="#contact">Start a pilot</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="tag rv">Private AI — Enterprise Knowledge Access</span>
+    <h1 class="rv">Your knowledge. Your rules. <span class="grad">Your perimeter.</span></h1>
+    <p class="hero-sub rv">We deploy a private AI assistant on top of your Confluence, wikis and knowledge bases — with corporate SSO, access-aware answers and full audit. On-prem, private cloud or government cloud. Every request stays inside your infrastructure.</p>
+    <div class="hero-cta rv">
+      <a class="btn btn-main" href="#contact">Start a pilot →</a>
+      <a class="btn btn-line" href="#solution">How it works</a>
+    </div>
+
+    <div class="terminal rv">
+      <div class="term-bar">
+        <span class="dot" style="background:#f87171"></span>
+        <span class="dot" style="background:#fbbf24"></span>
+        <span class="dot" style="background:#4ade80"></span>
+        <span class="mono">aisolation://corp-assistant — session: alice@yourcompany</span>
+      </div>
+      <div class="term-body">
+        <div class="term-q">&gt; What was the root cause of the November database failover, and is it fully resolved?</div>
+        <div class="term-a">Root cause: replication slot exhaustion on the primary node, triggered by an orphaned CDC consumer. Resolved on 2025-11-14; preventive runbook updated.</div>
+        <div style="margin:6px 0 14px">
+          <span class="term-src">Confluence · DB Runbook v4.2</span>
+          <span class="term-src">Jira · INC-2481</span>
+          <span class="term-src">Wiki · Postmortem 2025-11</span>
+        </div>
+        <div><span class="term-ok">✓ access: verified via SSO — sources match alice's permissions</span></div>
+        <div><span class="term-deny">✗ 2 restricted documents excluded from context</span></div>
+        <div style="color:var(--dim)">audit: logged · request never left your perimeter <span class="cursor"></span></div>
+      </div>
+    </div>
   </div>
 </header>
 
-<main>
-  <section class="hero">
-    <div class="container">
-      <p class="kicker">Приватный AI для корпоративных знаний</p>
-      <h1>Ваши знания. Ваши правила доступа. Ваш AI-контур.</h1>
-      <p class="lead">Приватный AI-помощник для поиска по внутренним знаниям и решения рабочих задач. Объединяет Confluence, вики и базы знаний, отвечает со ссылками на источники и учитывает права доступа каждого сотрудника. Вся обработка — внутри инфраструктуры под вашим контролем.</p>
-      <div class="cta-row">
-        <a class="btn btn-primary" href="#contact">Запросить пилот →</a>
-        <a class="btn btn-ghost" href="#solution">Как это работает</a>
-      </div>
-      <div class="hero-meta">
-        <div>On-premise или облачный дата-центр внутри страны</div>
-        <div>Запросы и документы не покидают ваш контур</div>
-        <div>Корпоративная авторизация и аудит обращений</div>
-      </div>
-    </div>
-  </section>
+<div class="ticker">
+  <div class="ticker-track" id="ticker">
+    <span><i>●</i>ON-PREM<i>●</i>PRIVATE CLOUD</span><span><i>●</i>GOVERNMENT CLOUD</span><span><i>●</i>SSO / LDAP / AD</span><span><i>●</i>RAG OVER YOUR SOURCES</span><span><i>●</i>ACCESS-AWARE ANSWERS</span><span><i>●</i>FULL AUDIT TRAIL</span><span><i>●</i>ZERO EXTERNAL AI CALLS</span><span><i>●</i>GPU SIZING INCLUDED</span>
+  </div>
+</div>
 
-  <section class="block" id="problem">
-    <div class="container">
-      <p class="label"><b>01</b> / Задача</p>
-      <h2>Знания есть. Быстрого доступа к ним — нет.</h2>
-      <p class="section-lead">Корпоративные знания распределены между вики, Confluence и внутренними базами. Поиск ответа занимает часы, эксперты перегружены однотипными вопросами, а использовать внешние AI-сервисы с внутренними документами нельзя.</p>
-      <div class="grid cols-3">
-        <article class="card">
-          <span class="num">01</span>
-          <h3>Знания разрознены</h3>
-          <p>Информация распределена по системам: вики, Confluence, файловые хранилища, история инцидентов и заявок.</p>
-        </article>
-        <article class="card">
-          <span class="num">02</span>
-          <h3>Внешние AI под ограничениями</h3>
-          <p>Внутренние документы и запросы сотрудников не должны покидать контур компании и передаваться сторонним сервисам.</p>
-        </article>
-        <article class="card">
-          <span class="num">03</span>
-          <h3>Доступ неодинаков</h3>
-          <p>У подразделений и ролей разные права. AI-ответы обязаны учитывать это так же строго, как исходные системы.</p>
-        </article>
-      </div>
+<section id="problem">
+  <div class="wrap">
+    <span class="kick rv">01 — The problem</span>
+    <h2 class="rv">The knowledge exists. Fast, safe access to it doesn't.</h2>
+    <p class="sub rv">Enterprise knowledge is scattered across wikis, Confluence and internal databases. Answers take hours, experts drown in repeat questions — and external AI services are off-limits for internal documents.</p>
+    <div class="cards c3">
+      <div class="card rv"><span class="idx">/01</span><h3>Fragmented knowledge</h3><p>Information is spread across systems: wikis, Confluence, file shares, incident history and ticket queues.</p></div>
+      <div class="card rv"><span class="idx">/02</span><h3>External AI is restricted</h3><p>Internal documents and employee queries must not leave the company perimeter or reach third-party providers.</p></div>
+      <div class="card rv"><span class="idx">/03</span><h3>Access is not equal</h3><p>Departments and roles have different rights. AI answers must respect them as strictly as the source systems do.</p></div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <section class="block" id="solution">
-    <div class="container">
-      <p class="label"><b>02</b> / Решение</p>
-      <h2>Один помощник. Все ваши знания.</h2>
-      <p class="section-lead">Мы интегрируем приватную LLM с вашими источниками знаний и корпоративной авторизацией. Сотрудник задаёт вопрос — система находит ответ только среди документов, доступных ему, и показывает источники.</p>
-      <div class="grid cols-2">
-        <article class="card">
-          <span class="num">RAG</span>
-          <h3>Поиск по внутренним источникам</h3>
-          <p>Подключение Confluence, вики и баз знаний. Ответы формируются со ссылками на первоисточники — каждый факт можно проверить.</p>
-        </article>
-        <article class="card">
-          <span class="num">SSO</span>
-          <h3>Корпоративная авторизация</h3>
-          <p>Интеграция с действующей системой идентификации — SSO, LDAP, Active Directory. Мы не создаём отдельную модель доступа.</p>
-        </article>
-        <article class="card">
-          <span class="num">ACL</span>
-          <h3>Ответы в рамках полномочий</h3>
-          <p>Права доступа применяются при поиске и извлечении документов — до передачи данных в контекст модели, а не только при отображении ответа.</p>
-        </article>
-        <article class="card">
-          <span class="num">LOG</span>
-          <h3>Аудит обращений</h3>
-          <p>Кто обращался к системе, какие источники использованы, какой ответ сформирован. Правила журналирования и сроки хранения определяете вы.</p>
-        </article>
-      </div>
+<section id="solution">
+  <div class="wrap">
+    <span class="kick rv">02 — The solution</span>
+    <h2 class="rv">One assistant. All your knowledge. Only what you're allowed to see.</h2>
+    <p class="sub rv">We integrate a private LLM with your knowledge sources and corporate identity. An employee asks a question — the system answers only from documents they can access, with links to the originals.</p>
+    <div class="cards c2">
+      <div class="card rv"><span class="idx">RAG</span><h3>Search across internal sources</h3><p>Confluence, wikis and knowledge bases connected into one reasoning layer. Answers cite first-hand sources — every fact is verifiable.</p></div>
+      <div class="card rv"><span class="idx">SSO</span><h3>Corporate identity</h3><p>Integration with your existing SSO, LDAP or Active Directory. We don't create a parallel access model.</p></div>
+      <div class="card rv"><span class="idx">ACL</span><h3>Permission-aware answers</h3><p>Access rights are enforced during retrieval — before any content reaches the model's context, not just at display time.</p></div>
+      <div class="card rv"><span class="idx">LOG</span><h3>Auditable by design</h3><p>Who asked, which sources were used, what answer was generated. Logging scope, retention and access are defined by you.</p></div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <section class="block dark" id="security">
-    <div class="container">
-      <p class="label"><b>03</b> / Безопасность</p>
-      <h2>Защита от утечек заложена в архитектуру.</h2>
-      <p class="section-lead">Изолированная обработка, разграничение доступа и контроль каналов передачи — на уровне всего решения: от загрузки документов до формирования ответа.</p>
-      <div class="grid cols-3">
-        <article class="card">
-          <span class="num">01</span>
-          <h3>Изолированный контур</h3>
-          <p>LLM, RAG, embeddings, поисковые индексы и обработка документов размещаются внутри вашего контура. Внешние зависимости и телеметрия исключаются.</p>
-        </article>
-        <article class="card">
-          <span class="num">02</span>
-          <h3>Доступ к знаниям по правам</h3>
-          <p>Ограничения применяются до передачи материалов модели. Сотрудник получает информацию только в пределах своих полномочий.</p>
-        </article>
-        <article class="card">
-          <span class="num">03</span>
-          <h3>Изоляция подразделений</h3>
-          <p>Пространства знаний, индексы и сервисные учётные записи разделены в соответствии с политиками компании.</p>
-        </article>
-        <article class="card">
-          <span class="num">04</span>
-          <h3>Контроль каналов передачи</h3>
-          <p>Сетевые политики ограничивают исходящие соединения. Интеграции работают только с разрешёнными системами.</p>
-        </article>
-        <article class="card">
-          <span class="num">05</span>
-          <h3>Защита чувствительных данных</h3>
-          <p>Обнаружение и маскирование конфиденциальной информации, ограничения на вывод, интеграция с корпоративными средствами DLP.</p>
-        </article>
-        <article class="card">
-          <span class="num">06</span>
-          <h3>Аудит без избыточного накопления</h3>
-          <p>Доступ к журналам, сроки хранения, маскирование содержимого и удаление данных контролирует заказчик.</p>
-        </article>
-      </div>
+<section id="security">
+  <div class="wrap">
+    <span class="kick rv">03 — Security &amp; data isolation</span>
+    <h2 class="rv">Leak protection is an architectural property, not a feature flag.</h2>
+    <p class="sub rv">Isolated processing, access enforcement and channel control — across the entire solution, from document ingestion to the generated answer.</p>
+    <div class="cards c3">
+      <div class="card rv"><span class="idx">/01</span><h3>Isolated processing loop</h3><p>LLM, RAG, embeddings, search indexes and document parsing run inside your perimeter. No external dependencies, no telemetry.</p></div>
+      <div class="card rv"><span class="idx">/02</span><h3>Rights-first retrieval</h3><p>Restrictions are applied before content reaches the model. Employees see only what their role allows.</p></div>
+      <div class="card rv"><span class="idx">/03</span><h3>Department isolation</h3><p>Knowledge spaces, indexes and service accounts are segregated according to your policies.</p></div>
+      <div class="card rv"><span class="idx">/04</span><h3>Egress control</h3><p>Network policies restrict outbound connections. Integrations talk only to explicitly allowed systems.</p></div>
+      <div class="card rv"><span class="idx">/05</span><h3>Sensitive data handling</h3><p>Detection and masking of confidential data, output restrictions, integration with your corporate DLP stack.</p></div>
+      <div class="card rv"><span class="idx">/06</span><h3>Audit without over-collection</h3><p>You control log access, retention periods, content masking and deletion. The audit trail serves you — not a vendor.</p></div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <section class="block" id="deployment">
-    <div class="container">
-      <p class="label"><b>04</b> / Размещение</p>
-      <h2>Инфраструктура — под вашим контролем.</h2>
-      <p class="section-lead">Два варианта размещения — с сохранением контроля над данными, моделями и обработкой на стороне заказчика.</p>
-      <div class="grid cols-2">
-        <article class="card">
-          <span class="num">A</span>
-          <h3>On-premise</h3>
-          <p>Развёртывание на ваших серверах: физический контроль над оборудованием, возможность работы в закрытом контуре без доступа в интернет.</p>
-        </article>
-        <article class="card">
-          <span class="num">B</span>
-          <h3>Облачный ДЦ внутри страны</h3>
-          <p>Размещение в облачном дата-центре в нужной юрисдикции — с сохранением контроля над инфраструктурой и обработкой данных.</p>
-        </article>
-      </div>
-      <div class="statement">
-        Документы, запросы, ответы, поисковые индексы и журналы остаются внутри согласованного контура. Ничего не передаётся внешним AI-провайдерам.
-      </div>
-    </div>
-  </section>
-
-  <section class="block" id="delivery">
-    <div class="container">
-      <p class="label"><b>05</b> / Внедрение</p>
-      <h2>От пилота — к промышленной эксплуатации.</h2>
-      <div class="step">
-        <div class="n">01</div>
-        <div>
-          <h3>Пилот на реальной задаче</h3>
-          <p>Выбираем один процесс, подключаем ограниченный набор источников и измеряем результат на ваших данных — до решения о масштабировании и крупных вложениях.</p>
+<section id="infra">
+  <div class="wrap">
+    <span class="kick rv">04 — Infrastructure &amp; hardware</span>
+    <h2 class="rv">Your infrastructure. We take care of it end to end.</h2>
+    <p class="sub rv">Hardware is not our product — integration is. But the compute layer is part of the engagement: we size it, deploy it and keep it running.</p>
+    <div class="infra-grid">
+      <div class="deploy-list rv">
+        <div class="deploy">
+          <h3><span class="chip">ON-PREM</span> Your servers, your racks</h3>
+          <p>Deployment on your own hardware: physical control, optionally fully air-gapped. We handle GPU sizing, procuration guidance and capacity planning — you stay the hardware owner.</p>
+        </div>
+        <div class="deploy">
+          <h3><span class="chip">PRIV CLOUD</span> Private or government cloud</h3>
+          <p>Deployment in an in-country private or government cloud, under your jurisdiction — with full control over data and processing.</p>
         </div>
       </div>
-      <div class="step">
-        <div class="n">02</div>
-        <div>
-          <h3>Интеграция и безопасность</h3>
-          <p>Подключаем все нужные источники знаний, корпоративную авторизацию, сетевые политики, разграничение доступа и аудит обращений.</p>
-        </div>
-      </div>
-      <div class="step">
-        <div class="n">03</div>
-        <div>
-          <h3>Эксплуатация и сопровождение</h3>
-          <p>Документация, мониторинг, обновления и проверка качества ответов при изменениях. Система остаётся управляемой после запуска.</p>
-        </div>
+      <div class="note rv">
+        <b>Everything stays inside.</b> Documents, queries, answers, search indexes and logs never leave the agreed perimeter. Compute sizing is part of the service — from a single pilot node to a redundant production cluster.
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <section class="cta-band" id="contact">
-    <div class="container">
-      <h2>Обсудим пилот на вашей задаче?</h2>
-      <p>Покажем, как приватный AI-поиск работает на ваших источниках — с вашими правами доступа и политиками безопасности.</p>
-      <a class="btn btn-white" href="mailto:info@adminscloud.com?subject=AIsolation%20—%20пилот">Написать нам →</a>
+<section id="process">
+  <div class="wrap">
+    <span class="kick rv">05 — How we work</span>
+    <h2 class="rv">From pilot to production.</h2>
+    <div class="steps">
+      <div class="step rv"><span class="n">01</span><h3>Pilot on a real task</h3><p>One process, a bounded set of sources, measurable results on your own data — before any scaling decision or large investment.</p></div>
+      <div class="step rv"><span class="n">02</span><h3>Integration &amp; hardening</h3><p>Full source connectivity, corporate SSO, network policies, access segmentation and audit — engineered into the deployment.</p></div>
+      <div class="step rv"><span class="n">03</span><h3>Run &amp; evolve</h3><p>Documentation, monitoring, updates and answer-quality regression checks with every change. The system stays manageable after go-live.</p></div>
     </div>
-  </section>
-</main>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="wrap">
+    <div class="cta rv">
+      <h2>Let's scope a pilot on your use case.</h2>
+      <p>We'll show private AI search working on your own sources — with your access rights and your security policies applied from day one.</p>
+      <a class="btn btn-main" href="mailto:info@adminscloud.com?subject=AIsolation%20—%20pilot">Get in touch →</a>
+    </div>
+  </div>
+</section>
 
 <footer>
-  <div class="container">
-    <div class="top">
+  <div class="wrap">
+    <div class="row">
       <div>
-        <div class="wordmark">AI<span>solation</span></div>
-        <p class="tag">Приватный AI для корпоративных знаний. On-premise и локальное облако. Все запросы остаются внутри вашей инфраструктуры.</p>
+        <div class="brand">AI<em>solation</em></div>
+        <p class="small" style="max-width:34em;margin-top:10px">Private AI for enterprise knowledge. On-prem, private and government cloud. Every request stays inside your infrastructure.</p>
       </div>
-      <nav class="f-nav">
-        <a href="#problem">Задача</a>
-        <a href="#solution">Решение</a>
-        <a href="#security">Безопасность</a>
-        <a href="#deployment">Размещение</a>
-        <a href="#contact">Контакт</a>
-      </nav>
+      <div class="f-links">
+        <a href="#problem">Problem</a>
+        <a href="#solution">Solution</a>
+        <a href="#security">Security</a>
+        <a href="#infra">Infrastructure</a>
+        <a href="#contact">Contact</a>
+      </div>
     </div>
-    <div class="bottom">© 2026 AIsolation. Приватный AI для корпоративных знаний.</div>
+    <p class="small">© 2026 AIsolation. Private AI for enterprise knowledge.</p>
   </div>
 </footer>
+
+<script>
+const t=document.getElementById('ticker');
+t.innerHTML+=t.innerHTML;
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.12});
+document.querySelectorAll('.rv').forEach(el=>io.observe(el));
+</script>
 
 </body>
 </html>
